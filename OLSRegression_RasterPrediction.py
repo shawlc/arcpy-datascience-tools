@@ -12,22 +12,22 @@ To create an ArcToolbox tool with which to execute this script, do the following
     before pressing OK or Finish.
 
         DISPLAY NAME            DATA TYPE           PROPERTY>DIRECTION>VALUE    PROPERTY>DEFAULT>VALUE
-        Dependent Rasters       Raster Dataset      Input                       Multivalue
+        Indepedent Rasters       Raster Dataset      Input                       Multivalue
         Rasters to Predict      Raster Dataset      Input                       Multivalue
-        Independent Raster      Raster Dataset      Input                       Optional
+        Dependent Raster      Raster Dataset      Input                       Optional
         Output                  Raster Dataset      Output
 
-The dependent rasters are the rasters for which coefficients are calculated to predict the independent raster.
-The dependent rasters must have the same extent as the independent raster
+The indepedent rasters are the rasters for which coefficients are calculated to predict the dependent raster.
+The indepedent rasters must have the same extent as the dependent raster
 The output will be the dot product of the coefficients and the rasters to predict. As such, the rasters to predict
-must be of the same numerical range and interpretation as the dependent variables. The rasters to predict must be
-listed in the same order as the dependent rasters.
+must be of the same numerical range and interpretation as the indepedent variables. The rasters to predict must be
+listed in the same order as the indepedent rasters.
 
 Example:
 
-    Dependent Rasters = [Developed Area in City A, Population in City A]
+    Indepedent Rasters = [Developed Area in City A, Population in City A]
     Rasters to Predict = [Developed Area in City B, Population in City B]
-    Independent Raster = Household Income in City A
+    Dependent Raster = Household Income in City A
     Output (to be calculated by tool) = Household Income in City B
 
 7   To later revise any of this, right-click to the tool's name and select Properties.
@@ -85,7 +85,7 @@ try:
         numRow=compArray.shape[1]
         numCol=compArray.shape[2]
 
-        #CONVERT THE INDEPENDENT RASTER INTO AN ARRAY
+        #CONVERT THE DEPENDENT RASTER INTO AN ARRAY
         targetArray=arcpy.RasterToNumPyArray(target)
         targetArray=targetArray.astype(float)
         targetRow=targetArray.shape[0]  # an integer indicating number of rows in input and output grids
@@ -98,17 +98,17 @@ try:
         if targetRow == numRow and targetCol == numCol:
             arcpy.AddMessage("\nTarget array and composite array have equal dimensions")
 
-        dependentArray=np.asarray(map(lambda x:x.flatten(),compArray))
-        independArray=targetArray.flatten()
+        indepedentArray=np.asarray(map(lambda x:x.flatten(),compArray))
+        dependentarray=targetArray.flatten()
 
-        arcpy.AddMessage("\nDependent array has " + str(len(dependentArray[0]))+" length and is of type" + str(type(dependentArray[0][0])))
-        arcpy.AddMessage("\nIndependent array has "+str(len(independArray))+" length and is of type"+str(type(independArray[0])))
+        arcpy.AddMessage("\nIndepedent array has " + str(len(indepedentArray[0]))+" length and is of type" + str(type(indepedentArray[0][0])))
+        arcpy.AddMessage("\nDependent array has "+str(len(dependentarray))+" length and is of type"+str(type(dependentarray[0])))
 
         #Borrowed numpy least squares regression code from stackoverflow
         #https://stackoverflow.com/questions/11479064/multiple-linear-regression-in-python
-        dependentArray=dependentArray.T  # transpose so input vectors are along the rows
-        dependentArray=np.c_[dependentArray,np.ones(dependentArray.shape[0])]  # add bias term
-        beta_hat=np.linalg.lstsq(dependentArray,independArray)[0]
+        indepedentArray=indepedentArray.T  # transpose so input vectors are along the rows
+        indepedentArray=np.c_[indepedentArray,np.ones(indepedentArray.shape[0])]  # add bias term
+        beta_hat=np.linalg.lstsq(indepedentArray,dependentarray)[0]
 
         arcpy.AddMessage("\nBeta array length is "+str(len(beta_hat)))
 
